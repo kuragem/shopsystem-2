@@ -5,6 +5,8 @@ import VueRouter from 'vue-router'
 import ProductList from './pages/ProductList.vue'
 import ShopList from './pages/ShopList.vue'
 
+import SystemError from './pages/errors/System.vue'
+
 // VueRouterプラグインを使用する
 // これによって<RouterView />コンポーネントなどを使うことができる
 Vue.use(VueRouter)
@@ -18,6 +20,10 @@ const routes = [
     {
         path: '/shops',
         component: ShopList
+    },
+    {
+        path: '/500',
+        component: SystemError
     }
 ]
 
