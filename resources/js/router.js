@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 // ページコンポーネントをインポートする
 import ProductList from './pages/ProductList.vue'
 import ShopList from './pages/ShopList.vue'
+import ProductDetail from './pages/ProductDetail.vue'
 
 import SystemError from './pages/errors/System.vue'
 
@@ -22,9 +23,14 @@ const routes = [
         component: ShopList
     },
     {
+        path: '/products/:id',
+        component: ProductDetail,
+        props: true
+    },
+    {
         path: '/500',
         component: SystemError
-    }
+    },
 ]
 
 // VueRouterインスタンスを作成する

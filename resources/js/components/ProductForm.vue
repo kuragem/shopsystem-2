@@ -1,7 +1,15 @@
 <template>
     <div v-show="value" class="product-form" >
         <h2 class="title">新規商品の追加</h2>
-        <form class="form" @submit.prevent="submit">
+        <div v-show="loading" class="panel">
+            <Loader>処理中...</Loader>
+        </div>
+        <form v-show="!loading" class="form" @submit.prevent="submit">
+            <div class="errors" v-if="errors">
+                <ul v-if="errors">
+                    <li v-for="msg in errors" :key="msg">{{ msg }}</li>
+                </ul>
+            </div>
             <div class="form-group">
                 <label for="name">商品名（50文字以内）</label>
                 <input class="form__item" type="text" v-model="name" name="name" id="name" required maxlength="50">
@@ -29,7 +37,13 @@
 </template>
 
 <script>
+    import { CREATED, UNPROCESSABLE_ENTITY } from '../util'
+    import Loader from './Loader.vue'
+
     export default {
+        components: {
+            Loader
+        },
         props: {
             value: {
                 type: Boolean,
@@ -38,11 +52,13 @@
         },
         data() {
             return {
+                loading: false,
                 preview: null,
                 name: null,
                 description: null,
                 price: null,
-                image: [],
+                image: null,
+                errors: null
             }
         },
         methods: {
@@ -85,18 +101,40 @@
                 this.$el.querySelector('input[type="file"]').value = null
             },
             async submit() {
-                console.log(this.name)
-                console.log(this.image)
+                this.loading = true
+
                 let formData;
                 formData = new FormData();
+
                 formData.append('name', this.name)
                 formData.append('description', this.description)
                 formData.append('price', this.price)
                 formData.append('image', this.image)
+
                 const response = await axios.post('/api/products', formData)
+
+                this.loading = false
+
+                if (response.status === UNPROCESSABLE_ENTITY) {
+                    this.errors = response.data.errors
+                    return false
+                }
 
                 this.reset()
                 this.$emit('input', false)
+
+                if (response.status !== CREATED) {
+                    this.$store.commit('error/setCode', response.status)
+                    return false
+                }
+
+                // メッセージ登録
+                this.$store.commit('message/setContent', {
+                    content: '商品が追加されました。',
+                    timeout: 6000
+                })
+
+                this.$router.push(`/products/${response.data.id}`)
             }
         }
     }
